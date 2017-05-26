@@ -3350,17 +3350,28 @@ module.exports = yeast;
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.Player = Player;
+exports._player = _player;
 
 
-function Player(name, id) {
-	var x = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
-	var y = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
+function _player(name, id) {
+	var x = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : Math.round(settings.canvasWidth / 2);
+	var y = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : Math.round(settings.canvasHeight / 2);
+	var color = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : settings.playerColor;
+	var size = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : settings.playerSize;
 
 	this.name = name;
 	this.id = id;
 	this.x = x;
 	this.y = y;
+	this.color = color;
+	this.size = size;
+
+	this.show = function () {
+		noStroke();
+		fill(color);
+		ellipseMode(CENTER);
+		ellipse(this.x, this.y, this.size);
+	};
 }
 
 /***/ }),
@@ -38666,7 +38677,7 @@ var _socket2 = _interopRequireDefault(_socket);
 
 __webpack_require__(22);
 
-var _player = __webpack_require__(21);
+var _player2 = __webpack_require__(21);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -38677,13 +38688,51 @@ var socketAddr = "http://localhost:" + port;
 var socket = void 0;
 var Name = false;
 var ID = void 0;
-var users = [];
-var player = void 0;
+var players = [];
+var Player = void 0;
+
+//let ctrl;
+//let settings;
+//let canvas;
 
 var bodyEl = document.querySelector("body");
 var titleEl = document.querySelector("#inputTitle");
 var nameEl = document.querySelector("input#inputName");
 var submitEl = document.querySelector("input#inputSubmit");
+
+window.setup = function () {
+
+	window.ctrl = {
+		//                       arrow keys
+		up: ["W".charCodeAt(0), 38],
+		down: ["S".charCodeAt(0), 40],
+		left: ["A".charCodeAt(0), 37],
+		right: ["D".charCodeAt(0), 39],
+		action: [" ".charCodeAt(0)]
+	};
+	window.settings = {
+		canvasWidth: 400,
+		canvasHeight: 400,
+		playerSize: 16,
+		playerColor: [Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), 255],
+		playerStep: 4
+	};
+	window.canvas;
+	// set following vars global from window
+	//ctrl = window.ctrl;
+	//settings = window.settings;
+	//canvas = window.canvas;
+
+	// delete default canvas
+	//if (document.querySelector("canvas")) bodyEl.removeChild(document.querySelector("canvas"));
+	noCanvas();
+
+	// get user name
+	nameEl.addEventListener("keydown", function (e) {
+		if (e.key == "Enter") checkName();
+	});
+	submitEl.addEventListener("click", checkName);
+};
 
 function checkName() {
 	var name = nameEl.value;
@@ -38699,48 +38748,100 @@ function checkName() {
 }
 
 function start() {
-	// create player
-	player = new _player.Player(Name, 0);
+	// create Player
+	/*window.*/Player = new _player2._player(Name, 0);
+
+	// tmp; for browser console debugging
+	//window.playerInterval = setInterval(function () { window.Player = Player }, 500);
+	window.Player = Player;
+	window.players = players;
 
 	socket = _socket2.default.connect(socketAddr);
 
-	socket.emit("addUser", player); // add user to server
+	socket.emit("addUser", Player); // add user to server
+
+	// set user id and get all players
 	socket.on("setUsers", function (data) {
-		// set user id and get all users
 		ID = data.id;
-		player.id = ID;
-		users = data.users;
-		users.push(player);
+		Player.id = ID;
 
-		console.log(player);
-		console.log(users);
+		data.users.forEach(function (user) {
+			players.push(new _player2._player(user.name, user.id, user.x, user.y, user.color, user.size));
+		});
 
-		console.log("array: " + users[0].x);
-		//console.log(users);
-		console.log("var: " + player.x);
-		player.x = 1;
-		console.log("CHANGED");
-		console.log("array: " + users[0].x);
-		//console.log(users);
-		console.log("var: " + player.x);
+		players.push(Player);
 	});
+
+	// update other Player(s)
+	socket.on("playerUpdateClient", function (data) {
+		players.forEach(function (player) {
+			if (data.id == player.id) {
+				player.x = data.x;
+				player.y = data.y;
+				console.log("test " + player.x);
+				// MIGHT NEED TO ADD MORE HERE EVENTUALLY
+			}
+		});
+	});
+
+	canvas = createCanvas(settings.canvasWidth, settings.canvasHeight);
+	// show canvas, is hidden by default for some reason
+	var canvasDOM = document.querySelector("canvas");
+	canvasDOM.setAttribute("data-hidden", "false");
+	canvasDOM.style.visibility = "";
+	background(128);
 }
 
-window.setup = function () {
+//function keyPressed() { window.preventDefault(); };
 
-	// get user name
-	nameEl.addEventListener("keydown", function (e) {
-		if (e.key == "Enter") checkName();
+function checkKey(key) {
+	return keyIsDown(key);
+}
+
+function checkControls() {
+	if (ctrl.up.some(checkKey) && !ctrl.down.some(checkKey)) {
+		// up
+		Player.y -= settings.playerStep;
+		//Player.y = Player.y - settings.playerStep;
+		sendPlayerData();
+	} else if (ctrl.down.some(checkKey) && !ctrl.up.some(checkKey)) {
+		// down
+		Player.y += settings.playerStep;
+		sendPlayerData();
+	}
+	if (ctrl.left.some(checkKey) && !ctrl.right.some(checkKey)) {
+		// left
+		Player.x -= settings.playerStep;
+		sendPlayerData();
+	} else if (ctrl.right.some(checkKey) && !ctrl.left.some(checkKey)) {
+		// right
+		Player.x += settings.playerStep;
+		sendPlayerData();
+	}
+	// CHANGE THIS TO USE SAME FUNCTION AS ABOVE
+	if (keyCode == ctrl.action) {
+		// action
+		console.log("ACTION KEY");
+	}
+
+	keyCode = 0; // keyCode is always last key press, so reset it
+}
+
+function sendPlayerData() {
+	socket.emit("playerUpdate", Player);
+}
+
+window.draw = function () {
+	background(128);
+
+	// controls
+	if (keyIsPressed === true) checkControls();
+
+	// draw players
+	players.forEach(function (user) {
+		user.show();
 	});
-	submitEl.addEventListener("click", checkName);
-
-	//while (!Name) {
-	//	entry();
-	//}
-
 };
-
-function draw() {}
 
 /***/ }),
 /* 27 */

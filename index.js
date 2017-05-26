@@ -40,10 +40,16 @@ io.sockets.on("connection", (socket) => {
 	socket.on("addUser", (data) => {
 		socket.emit("setUsers", {id: ID, users: users});
 		users.push({name: data.name, id: ID, x: 0, y: 0});
+		console.log(chalk.cyan(JSON.stringify(data)));
 	});
 
+	socket.on("playerUpdate", (data) => {
+		socket.emit("playerUpdateClient", data);
+	})
+
+
 	socket.on("disconnect", () => {
-		console.log(chalk.red(chalk.underline(curDate("H:M:S")) + " - disconnected: " + chalk.bold(socket.ID + " - " + IP)));
+		console.log(chalk.red(chalk.underline(curDate("H:M:S")) + " - disconnected: " + chalk.bold(ID + " - " + IP)));
 		users.forEach((user, index) => {
 			if (user.id == ID) users.splice(index,1);
 		});
