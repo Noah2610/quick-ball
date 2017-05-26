@@ -1,0 +1,29 @@
+{
+  "name": "quick-ball",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack --config webpack.config.babel.js",
+    "src": "babel-node ./index.js",
+    "SRC": "node ./index.js",
+    "prestart": "npm run build",
+    "start": "npm run src"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "babel": "^6.23.0",
+    "babel-cli": "^6.24.1",
+    "babel-loader": "^7.0.0",
+    "babel-preset-es2015": "^6.24.1",
+    "chalk": "^1.1.3",
+    "express": "^4.15.3",
+    "node-datetime": "^1.0.0",
+    "p5": "^0.5.9",
+    "path": "^0.12.7",
+    "socket.io": "^2.0.1",
+    "socket.io-client": "^2.0.1",
+    "webpack": "^2.5.1"
+  }
+}
