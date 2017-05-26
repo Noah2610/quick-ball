@@ -11,9 +11,17 @@ function _player(name, id, x=Math.round(settings.canvasWidth / 2),y=Math.round(s
 
 
 	this.show = function () {
+		// draw body
 		noStroke();
-		fill(color);
+		fill(this.color);
 		ellipseMode(CENTER);
 		ellipse(this.x,this.y, this.size);
+		// draw name tag
+		stroke(0);
+		strokeWeight(2);
+		textAlign(CENTER,TOP);
+		textSize(16);
+		text(this.name, this.x, this.y + 8);
+		
 	}
 }

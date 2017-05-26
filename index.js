@@ -38,17 +38,28 @@ io.sockets.on("connection", (socket) => {
 	console.log(chalk.green(chalk.underline(curDate("H:M:S")) + " - connected: " + chalk.bold(ID + " - " + IP)));
 
 	socket.on("addUser", (data) => {
-		socket.emit("setUsers", {id: ID, users: users});
-		users.push({name: data.name, id: ID, x: 0, y: 0});
-		console.log(chalk.cyan(JSON.stringify(data)));
+		// give new connection its ID
+		socket.emit("getInitData", { id: ID, players: users });
+		// add new user to server's user array
+		users.push({name: data.name, id: ID, x: data.x, y: data.y, color: data.color, size: data.size});
+		// give every previously established connection the new player's data
+		socket.broadcast.emit("addPlayer", users[users.length - 1]);
+		//console.log(chalk.cyan(JSON.stringify(data)));
 	});
 
 	socket.on("playerUpdate", (data) => {
-		socket.emit("playerUpdateClient", data);
+		socket.broadcast.emit("playerUpdateClient", data);
+		users.forEach((user) => {
+			if (user.id == data.id) {
+				user.x = data.x;
+				user.y = data.y;
+			}
+		});
 	})
 
 
 	socket.on("disconnect", () => {
+		// REMOVE USER FROM users ARRAY AND TELL EVERY CONNECTION
 		console.log(chalk.red(chalk.underline(curDate("H:M:S")) + " - disconnected: " + chalk.bold(ID + " - " + IP)));
 		users.forEach((user, index) => {
 			if (user.id == ID) users.splice(index,1);

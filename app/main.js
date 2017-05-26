@@ -25,6 +25,8 @@ const submitEl = document.querySelector("input#inputSubmit");
 
 window.setup = function() {
 
+	window.gameStart = false;
+
 	window.ctrl = {
 		//                       arrow keys
 		up:			["W".charCodeAt(0), 38],
@@ -77,8 +79,10 @@ function checkName() {
 
 
 function start() {
+	gameStart = true;
 	// create Player
 	/*window.*/Player = new _player(Name, 0);
+	players.push(Player);  // add this client to players
 
 		// tmp; for browser console debugging
 		//window.playerInterval = setInterval(function () { window.Player = Player }, 500);
@@ -89,16 +93,32 @@ function start() {
 
 	socket.emit("addUser", Player);  // add user to server
 
-	// set user id and get all players
-	socket.on("setUsers", (data) => {
+	// get socket ID for this client and all player information
+	// this should only be executed once
+	let safetyCounter = 0;
+	socket.on("getInitData", (data) => {
+			// for safety
+			safetyCounter++;
+			if (safetyCounter > 1) {
+				console.log("getInitData WAS CALLED MORE THAN ONCE!!!!!!!!! (" + safetyCounter + ")\nTHIS SHOULD NEVER HAPPEN TO A CONNECTION!!!");
+			}
+		// set this client' ID
 		ID = data.id;
 		Player.id = ID;
-
-		data.users.forEach((user) => {
-			players.push(new _player(user.name, user.id, user.x,user.y, user.color, user.size));
+		// populate players array
+		data.players.forEach((player) => {
+			players.push(new _player(player.name, player.id, player.x,player.y, player.color, player.size));
 		});
+	});
+	
 
-		players.push(Player);
+	// receive new player
+	socket.on("addPlayer", (data) => {
+		//ID = data.id;
+		//Player.id = ID;
+
+		players.push(new _player(data.name, data.id, data.x,data.y, data.color, data.size));
+		console.log(players.length);
 	});
 
 	// update other Player(s)
@@ -107,7 +127,7 @@ function start() {
 			if (data.id == player.id) {
 				player.x = data.x;
 				player.y = data.y;
-				console.log("test " + player.x);
+				//console.log("test " + player.x);
 				// MIGHT NEED TO ADD MORE HERE EVENTUALLY
 			}
 		});
@@ -164,7 +184,7 @@ window.draw = function() {
 	background(128);
 
 	// controls
-	if (keyIsPressed === true) checkControls();
+	if (gameStart && keyIsPressed === true) checkControls();
 
 	// draw players
 	players.forEach((user) => {

@@ -3367,10 +3367,17 @@ function _player(name, id) {
 	this.size = size;
 
 	this.show = function () {
+		// draw body
 		noStroke();
-		fill(color);
+		fill(this.color);
 		ellipseMode(CENTER);
 		ellipse(this.x, this.y, this.size);
+		// draw name tag
+		stroke(0);
+		strokeWeight(2);
+		textAlign(CENTER, TOP);
+		textSize(16);
+		text(this.name, this.x, this.y + 8);
 	};
 }
 
@@ -38702,6 +38709,8 @@ var submitEl = document.querySelector("input#inputSubmit");
 
 window.setup = function () {
 
+	window.gameStart = false;
+
 	window.ctrl = {
 		//                       arrow keys
 		up: ["W".charCodeAt(0), 38],
@@ -38748,8 +38757,10 @@ function checkName() {
 }
 
 function start() {
+	gameStart = true;
 	// create Player
 	/*window.*/Player = new _player2._player(Name, 0);
+	players.push(Player); // add this client to players
 
 	// tmp; for browser console debugging
 	//window.playerInterval = setInterval(function () { window.Player = Player }, 500);
@@ -38760,16 +38771,31 @@ function start() {
 
 	socket.emit("addUser", Player); // add user to server
 
-	// set user id and get all players
-	socket.on("setUsers", function (data) {
+	// get socket ID for this client and all player information
+	// this should only be executed once
+	var safetyCounter = 0;
+	socket.on("getInitData", function (data) {
+		// for safety
+		safetyCounter++;
+		if (safetyCounter > 1) {
+			console.log("getInitData WAS CALLED MORE THAN ONCE!!!!!!!!! (" + safetyCounter + ")\nTHIS SHOULD NEVER HAPPEN TO A CONNECTION!!!");
+		}
+		// set this client' ID
 		ID = data.id;
 		Player.id = ID;
-
-		data.users.forEach(function (user) {
-			players.push(new _player2._player(user.name, user.id, user.x, user.y, user.color, user.size));
+		// populate players array
+		data.players.forEach(function (player) {
+			players.push(new _player2._player(player.name, player.id, player.x, player.y, player.color, player.size));
 		});
+	});
 
-		players.push(Player);
+	// receive new player
+	socket.on("addPlayer", function (data) {
+		//ID = data.id;
+		//Player.id = ID;
+
+		players.push(new _player2._player(data.name, data.id, data.x, data.y, data.color, data.size));
+		console.log(players.length);
 	});
 
 	// update other Player(s)
@@ -38778,7 +38804,7 @@ function start() {
 			if (data.id == player.id) {
 				player.x = data.x;
 				player.y = data.y;
-				console.log("test " + player.x);
+				//console.log("test " + player.x);
 				// MIGHT NEED TO ADD MORE HERE EVENTUALLY
 			}
 		});
@@ -38835,7 +38861,7 @@ window.draw = function () {
 	background(128);
 
 	// controls
-	if (keyIsPressed === true) checkControls();
+	if (gameStart && keyIsPressed === true) checkControls();
 
 	// draw players
 	players.forEach(function (user) {
