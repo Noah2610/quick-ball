@@ -41,7 +41,7 @@ io.sockets.on("connection", (socket) => {
 		// give new connection its ID
 		socket.emit("getInitData", { id: ID, players: users });
 		// add new user to server's user array
-		users.push({name: data.name, id: ID, x: data.x, y: data.y, color: data.color, size: data.size});
+		users.push({name: data.name, id: ID, x: data.x, y: data.y, color: data.color, size: data.size, ringSize: data.ringSize});
 		// give every previously established connection the new player's data
 		socket.broadcast.emit("addPlayer", users[users.length - 1]);
 		//console.log(chalk.cyan(JSON.stringify(data)));
@@ -63,6 +63,7 @@ io.sockets.on("connection", (socket) => {
 		console.log(chalk.red(chalk.underline(curDate("H:M:S")) + " - disconnected: " + chalk.bold(ID + " - " + IP)));
 		users.forEach((user, index) => {
 			if (user.id == ID) users.splice(index,1);
+			socket.broadcast.emit("removePlayer", ID);
 		});
 	});
 

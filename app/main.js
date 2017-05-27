@@ -3,6 +3,7 @@ import io from "socket.io-client";
 import "p5";
 
 import {_player} from "./player";
+import {_ball} from "./ball";
 //import {Ball} from "./ball";
 
 const port = 3000;
@@ -12,6 +13,7 @@ let Name = false;
 let ID;
 let players = [];
 let Player;
+let canAction = true;
 
 //let ctrl;
 //let settings;
@@ -33,11 +35,14 @@ window.setup = function() {
 		down:		["S".charCodeAt(0), 40],
 		left:		["A".charCodeAt(0), 37],
 		right:	["D".charCodeAt(0), 39],
-		action:	[" ".charCodeAt(0)]
+		action:	[" ".charCodeAt(0), "X".charCodeAt(0)]
 	};
 	window.settings = {
 		canvasWidth: 400,
 		canvasHeight: 400,
+		fps: 60,
+		bgColor: 128,
+		actionCooldown: 1000,
 		playerSize: 16,
 		playerColor: [
 			Math.floor(Math.random() * 256),
@@ -45,8 +50,13 @@ window.setup = function() {
 			Math.floor(Math.random() * 256),
 			255
 		],
-		playerStep: 4
+		playerStep: 4,
+		ringSize: 48,
+		ringWidth: 1,
+		ringColor: [255,128,0],
+		ringInnerColor: [0,0,0,32]
 	};
+	window.frameRate(settings.fps);
 	window.canvas;
 	// set following vars global from window
 	//ctrl = window.ctrl;
@@ -107,7 +117,7 @@ function start() {
 		Player.id = ID;
 		// populate players array
 		data.players.forEach((player) => {
-			players.push(new _player(player.name, player.id, player.x,player.y, player.color, player.size));
+			players.push(new _player(player.name, player.id, player.x,player.y, player.color, player.size, player.ringSize));
 		});
 	});
 	
@@ -117,7 +127,7 @@ function start() {
 		//ID = data.id;
 		//Player.id = ID;
 
-		players.push(new _player(data.name, data.id, data.x,data.y, data.color, data.size));
+		players.push(new _player(data.name, data.id, data.x,data.y, data.color, data.size, data.ringSize));
 		console.log(players.length);
 	});
 
@@ -133,12 +143,19 @@ function start() {
 		});
 	});
 
+	// remove player
+	socket.on("removePlayer", (id) => {
+		players.forEach((player, index) => {
+			if (player.id == id) players.splice(index,1);
+		});
+	});
+
 	canvas = createCanvas(settings.canvasWidth, settings.canvasHeight);
 	// show canvas, is hidden by default for some reason
 	const canvasDOM = document.querySelector("canvas");
 	canvasDOM.setAttribute("data-hidden", "false");
 	canvasDOM.style.visibility = "";
-	background(128);
+	background(settings.bgColor);
 
 }
 
@@ -168,8 +185,13 @@ function checkControls() {
 		sendPlayerData();
 	}
 	// CHANGE THIS TO USE SAME FUNCTION AS ABOVE
-	if (keyCode == ctrl.action) {  // action
+	if (canAction && ctrl.action.some(checkKey)) {  // action
 		console.log("ACTION KEY");
+
+		Player.action();
+
+		canAction = false;
+		setTimeout(() => { canAction = true; }, settings.actionCooldown);
 	}
 
 	keyCode = 0;  // keyCode is always last key press, so reset it
@@ -181,14 +203,14 @@ function sendPlayerData() {
 
 
 window.draw = function() {
-	background(128);
+	background(settings.bgColor);
 
 	// controls
 	if (gameStart && keyIsPressed === true) checkControls();
 
 	// draw players
-	players.forEach((user) => {
-		user.show();
-	});
+	for (let countPlayer = players.length - 1; countPlayer >= 0; countPlayer--) {
+		players[countPlayer].show();
+	}
 }
 
