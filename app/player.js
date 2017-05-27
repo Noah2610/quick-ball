@@ -11,7 +11,8 @@ function _player(name, id, x=Math.round(settings.canvasWidth / 2),y=Math.round(s
 	this.ringSize = ringSize;
 	this.ringInnerColor = settings.ringInnerColor;
 	this.actionActive = false;
-	this.vertices = [];
+	this.vertices = getVertices(this.x,this.y,this.size, settings.playerTotalVertices);
+	this.ringVertices = getVertices(this.x,this.y,this.ringSize, settings.ringTotalVertices);
 
 
 	this.show = function () {
@@ -32,9 +33,6 @@ function _player(name, id, x=Math.round(settings.canvasWidth / 2),y=Math.round(s
 		textAlign(CENTER,TOP);
 		textSize(16);
 		text(this.name, this.x, this.y + 8);
-
-		// show vertices tmp:
-		this.vertices = getVertices(this.x,this.y,this.size);
 	};
 
 	this.action = function () {

@@ -42,6 +42,7 @@ window.setup = function() {
 		fps: 60,
 		bgColor: 128,
 		actionCooldown: 1000,
+
 		playerSize: 24,
 		playerColor: [
 			Math.floor(Math.random() * 256),
@@ -50,12 +51,16 @@ window.setup = function() {
 			255
 		],
 		playerStep: 4,
+		playerTotalVertices: 8,
+
 		ringSize: 64,
 		ringWidth: 1,
 		ringColor: [255,128,0],
 		ringInnerColor: [0,0,0,32],
+		ringTotalVertices: 16,
+
 		ballSize: 16,
-		totalVertices: 8
+		ballTotalVertices: 8
 	};
 	window.frameRate(settings.fps);
 	window.canvas;
@@ -138,7 +143,8 @@ function start() {
 			if (data.id == player.id) {
 				player.x = data.x;
 				player.y = data.y;
-				//console.log("test " + player.x);
+				player.vertices = data.vertices;
+				player.ringVertices = data.ringVertices;
 				// MIGHT NEED TO ADD MORE HERE EVENTUALLY
 			}
 		});
@@ -168,34 +174,37 @@ function checkKey(key) {
 }
 
 function checkControls() {
+	let hasMoved = false;
 	if (ctrl.up.some(checkKey) && !ctrl.down.some(checkKey)) {  // up
 		Player.y -= settings.playerStep;
-		//Player.y = Player.y - settings.playerStep;
-		sendPlayerData();
+		hasMoved = true;
 	} else
 	if (ctrl.down.some(checkKey) && !ctrl.up.some(checkKey)) {  // down
 		Player.y += settings.playerStep;
-		sendPlayerData();
+		hasMoved = true;
 	}
 	if (ctrl.left.some(checkKey) && !ctrl.right.some(checkKey)) {  // left
 		Player.x -= settings.playerStep;
-		sendPlayerData();
+		hasMoved = true;
 	} else
 	if (ctrl.right.some(checkKey) && !ctrl.left.some(checkKey)) {  // right
 		Player.x += settings.playerStep;
-		sendPlayerData();
+		hasMoved = true;
 	}
 	// CHANGE THIS TO USE SAME FUNCTION AS ABOVE
 	if (canAction && ctrl.action.some(checkKey)) {  // action
-		console.log("ACTION KEY");
-
 		Player.action();
 
 		canAction = false;
 		setTimeout(() => { canAction = true; }, settings.actionCooldown);
 	}
 
-	keyCode = 0;  // keyCode is always last key press, so reset it
+	if (hasMoved) {
+		Player.vertices = getVertices(Player.x,Player.y,Player.size, settings.playerTotalVertices);
+		Player.ringVertices = getVertices(Player.x,Player.y,Player.ringSize, settings.ringTotalVertices);
+		sendPlayerData();
+	}
+
 }
 
 function sendPlayerData() {
@@ -203,10 +212,10 @@ function sendPlayerData() {
 }
 
 
-window.getVertices = function(x,y,size) {
+window.getVertices = function(x,y,size,totalVertices) {
 
 	let vertices = [];
-	const incr = Math.round(360 / settings.totalVertices);
+	const incr = Math.round(360 / totalVertices);
 
 	for (let deg = 0; deg < 360; deg += incr) {
 		const rad = deg * (Math.PI / 180)
@@ -215,15 +224,17 @@ window.getVertices = function(x,y,size) {
 		vertices.push({x: pX, y: pY});
 	}
 	
-	for (let count = 0; count < vertices.length; count++) {
-		fill(0,255,0);
-		noStroke();
-		ellipseMode(CENTER);
-		ellipse(vertices[count].x,vertices[count].y, 4);
-	}
-
 	return vertices;
 
+};
+
+function showVertices(vertices) {
+	fill(255,0,0);
+	noStroke();
+	ellipseMode(CENTER);
+	for (let count = 0; count < vertices.length; count++) {
+		ellipse(vertices[count].x,vertices[count].y, 4);
+	}
 }
 
 
@@ -236,6 +247,8 @@ window.draw = function() {
 	// draw players
 	for (let countPlayer = players.length - 1; countPlayer >= 0; countPlayer--) {
 		players[countPlayer].show();
+		showVertices(players[countPlayer].vertices);
+		showVertices(players[countPlayer].ringVertices);
 	}
-}
+};
 
