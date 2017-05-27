@@ -238,17 +238,118 @@ function showVertices(vertices) {
 }
 
 
+window.tmp = function () {
+	collide({x:Player.x,y:Player.y}, Player.vertices, false,false);
+};
+
+//              { x,y }, [{x,y},...]
+function collide(center1, vertices1, center2, vertices2) {
+	
+	//vertices1.forEach((v1,i1) => {
+
+	const v1 = vertices1[0];
+	const dist2d = {
+		x: getPositive(center1.x - v1.x),
+		y: getPositive(center1.y - v1.y)
+	};
+	
+	console.log(dist2d);
+
+	noStroke()
+	fill(255,0,0);
+	ellipse(dist2d.x,dist2d.y,2);
+
+	// determine where vertice is relative to center point
+	//const pos1 = collideWhere(center1, v1);
+	//console.log(i1 + ": " + pos1);
+
+		//vertices2.forEach((v2,i2) => {
+//
+//
+		//});
+		
+	//});
+
+}
+
+function getPositive(num) {
+	if (num < 0) num *= -1;
+	return num;
+}
+
+function collideWhere(center, vertice) {
+/*
+	determine where vertice is relative to center point
+	return values:
+		"center",
+		"up", "down", "left", "right",
+		"up-left", "up-right",
+		"down-left", "down-right"
+*/
+
+
+	let h; let v;
+
+	// center
+	if (vertice.x == center.x && vertice.y == center.y) return "center";
+	else
+	// horizontal
+	if (vertice.x < center.x) h = "left";
+	else
+	if (vertice.x > center.x) h = "right";
+	// vertical
+	if (vertice.y < center.y) v = "up";
+	else
+	if (vertice.y > center.y) v = "down";
+
+	if (h !== undefined && v !== undefined)
+		return v + "-" + h;
+	else if (h === undefined) return v;
+	else if (v === undefined) return h;
+
+	//// same y-axis
+	//if (vertice.y == center.y) {
+		//// center
+		//if (vertice.x == center.x) return "center";
+		//else
+		//// left
+		//if (vertice.x < center.x) return "left";
+		//else
+		//// right
+		//if (vertice.x > center.x) return "right";
+	//} else
+	//// same x-axis
+	//if (vertice.x == center.x) {
+		//// left
+		//if (vertice.y < center.y) return "up";
+		//else
+		//// right
+		//if (vertice.y > center.y) return "down";
+	//} else
+//
+	//// up
+	//if (vertice.y < center.y) {
+//
+		//// up-left
+		//if (vertice.x < center.x) {
+			//return "up-left";
+		//}
+//
+	//}
+}
+
+
 window.draw = function() {
-	background(settings.bgColor);
+	//background(settings.bgColor);
 
 	// controls
 	if (gameStart && keyIsPressed === true) checkControls();
 
 	// draw players
 	for (let countPlayer = players.length - 1; countPlayer >= 0; countPlayer--) {
-		players[countPlayer].show();
+		//players[countPlayer].show();
 		showVertices(players[countPlayer].vertices);
-		showVertices(players[countPlayer].ringVertices);
+		//showVertices(players[countPlayer].ringVertices);
 	}
 };
 
