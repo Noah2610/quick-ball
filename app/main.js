@@ -2,9 +2,8 @@
 import io from "socket.io-client";
 import "p5";
 
-import {_player} from "./player";
-import {_ball} from "./ball";
-//import {Ball} from "./ball";
+import { _player } from "./player";
+import { _ball } from "./ball";
 
 const port = 3000;
 const socketAddr = "http://localhost:" + port;
@@ -43,7 +42,7 @@ window.setup = function() {
 		fps: 60,
 		bgColor: 128,
 		actionCooldown: 1000,
-		playerSize: 16,
+		playerSize: 24,
 		playerColor: [
 			Math.floor(Math.random() * 256),
 			Math.floor(Math.random() * 256),
@@ -51,10 +50,12 @@ window.setup = function() {
 			255
 		],
 		playerStep: 4,
-		ringSize: 48,
+		ringSize: 64,
 		ringWidth: 1,
 		ringColor: [255,128,0],
-		ringInnerColor: [0,0,0,32]
+		ringInnerColor: [0,0,0,32],
+		ballSize: 16,
+		totalVertices: 8
 	};
 	window.frameRate(settings.fps);
 	window.canvas;
@@ -199,6 +200,30 @@ function checkControls() {
 
 function sendPlayerData() {
 	socket.emit("playerUpdate", Player);
+}
+
+
+window.getVertices = function(x,y,size) {
+
+	let vertices = [];
+	const incr = Math.round(360 / settings.totalVertices);
+
+	for (let deg = 0; deg < 360; deg += incr) {
+		const rad = deg * (Math.PI / 180)
+		const pX = x + ((size / 2) * Math.cos(rad));
+		const pY = y + ((size / 2) * Math.sin(rad));
+		vertices.push({x: pX, y: pY});
+	}
+	
+	for (let count = 0; count < vertices.length; count++) {
+		fill(0,255,0);
+		noStroke();
+		ellipseMode(CENTER);
+		ellipse(vertices[count].x,vertices[count].y, 4);
+	}
+
+	return vertices;
+
 }
 
 

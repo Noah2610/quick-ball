@@ -7,6 +7,8 @@ function _ball(delay=1000, mvDir=[1,0], x=Math.round(settings.canvasWidth / 2),y
 	this.mvDir = mvDir;
 	this.x = x;
 	this.y = y;
+	this.size = settings.ballSize;
+	this.vertices = [];
 
 	this.move = function () {
 		if (this.delayed) return;  // don't move if delay still active
@@ -14,6 +16,11 @@ function _ball(delay=1000, mvDir=[1,0], x=Math.round(settings.canvasWidth / 2),y
 
 	this.show = function () {
 		// draw ball
-		
+	
 	};
+
+	this.getVertices = function () {
+		this.vertices = getVertices(this.x,this.y,this.size);
+	};
+
 }
