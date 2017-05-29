@@ -40,7 +40,7 @@ window.setup = function() {
 		canvasHeight: 400,
 		fps: 60,
 		bgColor: 128,
-		actionCooldown: 1000,
+		actionCooldown: 250,
 
 		playerSize: 24,
 		playerColor: [
@@ -52,15 +52,17 @@ window.setup = function() {
 		playerStep: 4,
 		playerTotalVertices: 8,
 
-		ringSize: 64,
+		ringSize: 128,
 		ringWidth: 1,
 		ringColor: [255,128,0],
 		ringInnerColor: [0,0,0,32],
 		ringTotalVertices: 16,
 
-		ballSize: 16,
+		ballSize: 10,
 		ballTotalVertices: 8,
-		ballColor: [255,128,32]
+		ballColor: [255,128,32],
+		ballSpdMult: 1,
+		ballSpdIncr: 0.25
 	};
 	window.frameRate(settings.fps);
 	window.canvas;
@@ -256,7 +258,7 @@ window.collide = function(instance1, instance2) {
 
 }
 
-function getDist(a,b) {
+window.getDist = function (a,b) {
 	return Math.sqrt(Math.pow(a.x - b.x,2) + Math.pow(a.y - b.y,2));
 }
 
@@ -269,14 +271,18 @@ window.draw = function() {
 
 	// draw ball(s)
 	for (let countBalls = 0; countBalls < balls.length; countBalls++) {
+		balls[countBalls].move();
 		balls[countBalls].show();
 	}
 
 	// draw players
 	for (let countPlayer = players.length - 1; countPlayer >= 0; countPlayer--) {
 		players[countPlayer].show();
-		showVertices(players[countPlayer].vertices);
-		showVertices(players[countPlayer].ringVertices);
+		//showVertices(players[countPlayer].vertices);
+		//showVertices(players[countPlayer].ringVertices);
 	}
+
+	// collision check for this client only
+	if (Player) Player.collision();
 };
 
