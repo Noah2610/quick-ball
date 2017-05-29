@@ -97,10 +97,12 @@ function _player(name, id, x=Math.round(settings.canvasWidth / 2),y=Math.round(s
 
 		this.inCollision.forEach((x) => {
 			if (x.part == "ring") {
-				//console.log(this.name + " collision with ring!");
-				
+				// deflect ball
 				balls[x.ball].deflect(this.x,this.y);
 				socket.emit("ballUpdate", { ball: balls[x.ball], i: x.ball });
+				// gain ring
+				this.ringSize += settings.playerRingIncr;
+				socket.emit("playerGain", { id: this.id, ringSize: this.ringSize });
 
 			}
 		});

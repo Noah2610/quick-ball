@@ -75,6 +75,15 @@ io.sockets.on("connection", (socket) => {
 		});
 	});
 
+	socket.on("playerGain", (data) => {
+		socket.broadcast.emit("playerGainClient", data);
+		users.forEach((user) => {
+			if (user.id == data.id) {
+				user.ringSize = data.ringSize;
+			}
+		});
+	});
+
 	socket.on("playerDeath", (data) => {
 		socket.broadcast.emit("playerDeathClient", data);
 		users.forEach((user) => {

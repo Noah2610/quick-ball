@@ -37,35 +37,37 @@ window.setup = function() {
 		action:	[" ".charCodeAt(0), "X".charCodeAt(0)]
 	};
 	window.settings = {
-		canvasWidth: 800,
-		canvasHeight: 800,
-		fps: 60,
+		canvasWidth: 600,
+		canvasHeight: 600,
+		fps: 45,
 		bgColor: 128,
 		actionCooldown: 250,
 		invulTime: 1000,
 
-		playerSize: 24,
+		playerSize: 32,
 		playerColor: [
 			Math.floor(Math.random() * 256),
 			Math.floor(Math.random() * 256),
 			Math.floor(Math.random() * 256)
 		],
-		playerStep: 4,
+		playerStep: 6,
 		playerTotalVertices: 8,
 		playerRingDecr: 16,
 
-		ringSize: 128,
-		ringWidth: 1,
+		ringSize: 160,
+		ringWidth: 2,
 		ringColor: [255,128,0],
-		ringInnerColor: [0,0,0,32],
+		ringInnerColor: [0,0,16,32],
 		ringTotalVertices: 16,
 
-		ballSize: 10,
+		ballSize: 12,
 		ballTotalVertices: 8,
 		ballColor: [255,128,32],
-		ballSpdMult: 1,
+		ballSpdMult: 4,
 		ballSpdIncr: 0.25
 	};
+	settings.playerRingIncr = Math.round(settings.playerRingDecr / 4);
+
 	window.frameRate(settings.fps);
 	window.canvas;
 	//window.socket;
@@ -174,6 +176,14 @@ function start() {
 		});
 	});
 
+	socket.on("playerGainClient", (data) => {
+		players.forEach((player) => {
+			if (player.id == data.id) {
+				player.ringSize = data.ringSize;
+			}
+		});
+	});
+
 	socket.on("playerDeathClient", (data) => {
 		players.forEach((player) => {
 			if (player.id == data) {
@@ -204,8 +214,17 @@ function start() {
 	background(settings.bgColor);
 	
 	balls.push(new _ball());
+	setInterval(() => { balls.push(new _ball()); }, 60000);
 
 }
+
+
+// manually create more balls
+//   delay, mvDir, x,y
+//window.mkBall = function (delay, mvDir, x,y) {
+	//balls.push(new _ball(delay, mvDir, x,y));
+	//socket.emit("ballUpdate", { ball: balls[x.ball], i: x.ball });
+//};
 
 
 //function keyPressed() { window.preventDefault(); };
