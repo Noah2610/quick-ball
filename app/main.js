@@ -1,6 +1,8 @@
 
+import "babel-polyfill";
 import io from "socket.io-client";
 import "p5";
+
 
 import { _player } from "./player";
 import { _ball } from "./ball";
@@ -136,6 +138,10 @@ function start() {
 		players.push(new _player(data.name, data.id, data.x,data.y, data.color, data.size, data.ringSize));
 	});
 
+	socket.on("addBall", (data) => {
+		balls.push(new _ball(data));
+	});
+
 	// update other Player(s)
 	socket.on("playerUpdateClient", (data) => {
 		players.forEach((player) => {
@@ -196,8 +202,6 @@ function start() {
 	canvasDOM.setAttribute("data-hidden", "false");
 	canvasDOM.style.visibility = "";
 	background(settings.bgColor);
-	
-	balls.push(new _ball());
 
 }
 
