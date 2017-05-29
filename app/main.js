@@ -7,8 +7,8 @@ import "p5";
 import { _player } from "./player";
 import { _ball } from "./ball";
 
-const port = 3000;
-const socketAddr = "http://192.168.178.93:" + port;
+const port = 7777;
+const socketAddr = "http://noahro.dynu.com:" + port;
 let Name = false;
 let ID;
 let Player;
@@ -202,6 +202,8 @@ function start() {
 	canvasDOM.setAttribute("data-hidden", "false");
 	canvasDOM.style.visibility = "";
 	background(settings.bgColor);
+	
+	balls.push(new _ball());
 
 }
 
