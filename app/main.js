@@ -36,8 +36,8 @@ window.setup = function() {
 		action:	[" ".charCodeAt(0), "X".charCodeAt(0)]
 	};
 	window.settings = {
-		canvasWidth: 400,
-		canvasHeight: 400,
+		canvasWidth: 800,
+		canvasHeight: 800,
 		fps: 60,
 		bgColor: 128,
 		actionCooldown: 250,
