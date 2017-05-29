@@ -6,8 +6,7 @@ import { _player } from "./player";
 import { _ball } from "./ball";
 
 const port = 3000;
-const socketAddr = "http://localhost:" + port;
-let socket;
+const socketAddr = "http://192.168.178.93:" + port;
 let Name = false;
 let ID;
 let Player;
@@ -41,16 +40,17 @@ window.setup = function() {
 		fps: 60,
 		bgColor: 128,
 		actionCooldown: 250,
+		invulTime: 1000,
 
 		playerSize: 24,
 		playerColor: [
 			Math.floor(Math.random() * 256),
 			Math.floor(Math.random() * 256),
-			Math.floor(Math.random() * 256),
-			255
+			Math.floor(Math.random() * 256)
 		],
 		playerStep: 4,
 		playerTotalVertices: 8,
+		playerRingDecr: 16,
 
 		ringSize: 128,
 		ringWidth: 1,
@@ -66,6 +66,7 @@ window.setup = function() {
 	};
 	window.frameRate(settings.fps);
 	window.canvas;
+	//window.socket;
 	window.players = [];
 	window.balls = [];
 	// set following vars global from window
@@ -109,7 +110,7 @@ function start() {
 		window.Player = Player;
 		window.players = players;
 
-	socket = io.connect(socketAddr);
+	window.socket = io.connect(socketAddr);
 
 	socket.emit("addUser", Player);  // add user to server
 
@@ -117,28 +118,22 @@ function start() {
 	// this should only be executed once
 	let safetyCounter = 0;
 	socket.on("getInitData", (data) => {
-			// for safety
-			safetyCounter++;
-			if (safetyCounter > 1) {
-				console.log("getInitData WAS CALLED MORE THAN ONCE!!!!!!!!! (" + safetyCounter + ")\nTHIS SHOULD NEVER HAPPEN TO A CONNECTION!!!");
-			}
 		// set this client' ID
 		ID = data.id;
 		Player.id = ID;
 		// populate players array
 		data.players.forEach((player) => {
-			players.push(new _player(player.name, player.id, player.x,player.y, player.color, player.size, player.ringSize));
+			players.push(new _player(player.name, player.id, player.x,player.y, player.color, player.size, player.ringSize, player.dead));
 		});
 	});
 	
 
 	// receive new player
-	socket.on("addPlayer", (data) => {
+	socket.on("addPlayerClient", (data) => {
 		//ID = data.id;
 		//Player.id = ID;
 
 		players.push(new _player(data.name, data.id, data.x,data.y, data.color, data.size, data.ringSize));
-		console.log(players.length);
 	});
 
 	// update other Player(s)
@@ -152,6 +147,40 @@ function start() {
 				// MIGHT NEED TO ADD MORE HERE EVENTUALLY
 			}
 		});
+	});
+
+	// a player has hit action
+	socket.on("playerActionClient", (data) => {
+		players.forEach((player) => {
+			if (player.id == data) {
+				player.actionShow();
+			}
+		});
+	});
+
+	socket.on("playerHitClient", (data) => {
+		players.forEach((player) => {
+			if (player.id == data.id) {
+				player.ringSize = data.ringSize;
+				player.invul = true;
+				setTimeout(() => { player.invul = false; }, settings.invulTime);
+			}
+		});
+	});
+
+	socket.on("playerDeathClient", (data) => {
+		players.forEach((player) => {
+			if (player.id == data) {
+				player.dead = true;
+			}
+		});
+	});
+
+	socket.on("ballUpdateClient", (data) => {
+		balls[data.i].x = data.ball.x;
+		balls[data.i].y = data.ball.y;
+		balls[data.i].mvDir = data.ball.mvDir;
+		balls[data.i].spdMult = data.ball.spdMult;
 	});
 
 	// remove player
@@ -200,9 +229,10 @@ function checkControls() {
 	// CHANGE THIS TO USE SAME FUNCTION AS ABOVE
 	if (canAction && ctrl.action.some(checkKey)) {  // action
 		Player.action();
-
 		canAction = false;
 		setTimeout(() => { canAction = true; }, settings.actionCooldown);
+
+		socket.emit("playerAction", Player.id);
 	}
 
 	if (hasMoved) {
@@ -264,25 +294,28 @@ window.getDist = function (a,b) {
 
 
 window.draw = function() {
-	background(settings.bgColor);
+	if (gameStart) {
+		background(settings.bgColor);
 
-	// controls
-	if (gameStart && keyIsPressed === true) checkControls();
+		// controls
+		if (!Player.dead && keyIsPressed === true) checkControls();
 
-	// draw ball(s)
-	for (let countBalls = 0; countBalls < balls.length; countBalls++) {
-		balls[countBalls].move();
-		balls[countBalls].show();
+		// draw ball(s)
+		for (let countBalls = 0; countBalls < balls.length; countBalls++) {
+			balls[countBalls].move();
+			balls[countBalls].show();
+		}
+
+		// draw players
+		for (let countPlayer = players.length - 1; countPlayer >= 0; countPlayer--) {
+			if (!players[countPlayer].dead)
+				players[countPlayer].show();
+			//showVertices(players[countPlayer].vertices);
+			//showVertices(players[countPlayer].ringVertices);
+		}
+
+		// collision check for this client only
+		if (!Player.dead && Player) Player.collision();
 	}
-
-	// draw players
-	for (let countPlayer = players.length - 1; countPlayer >= 0; countPlayer--) {
-		players[countPlayer].show();
-		//showVertices(players[countPlayer].vertices);
-		//showVertices(players[countPlayer].ringVertices);
-	}
-
-	// collision check for this client only
-	if (Player) Player.collision();
 };
 

@@ -1,7 +1,7 @@
 
 export { _player };
 
-function _player(name, id, x=Math.round(settings.canvasWidth / 2),y=Math.round(settings.canvasHeight / 2), color=settings.playerColor, size=settings.playerSize, ringSize=settings.ringSize) {
+function _player(name, id, x=Math.round(settings.canvasWidth / 2),y=Math.round(settings.canvasHeight / 2), color=settings.playerColor, size=settings.playerSize, ringSize=settings.ringSize, dead=false) {
 	this.name = name;
 	this.id = id;
 	this.x = x;
@@ -14,6 +14,8 @@ function _player(name, id, x=Math.round(settings.canvasWidth / 2),y=Math.round(s
 	this.vertices = getVertices(this.x,this.y,this.size, settings.playerTotalVertices);
 	this.ringVertices = getVertices(this.x,this.y,this.ringSize, settings.ringTotalVertices);
 	this.inCollision = [];
+	this.dead = dead;
+	this.invul = false;
 
 
 	this.show = function () {
@@ -24,7 +26,8 @@ function _player(name, id, x=Math.round(settings.canvasWidth / 2),y=Math.round(s
 		ellipse(this.x,this.y, this.ringSize);
 		// draw body
 		noStroke();
-		fill(this.color);
+		if (this.invul) fill(this.color.concat(64));
+		else if (!this.invul) fill(this.color.concat(255));
 		ellipseMode(CENTER);
 		ellipse(this.x,this.y, this.size);
 		// draw name tag
@@ -66,6 +69,22 @@ function _player(name, id, x=Math.round(settings.canvasWidth / 2),y=Math.round(s
 			} else if ((collisionExists && !collision) || (collisionExists && bodyCollision)) this.inCollision.splice(obj.ball ,1);
 		});
 
+		this.inCollision.forEach((x) => {
+			if (x.part == "body") {
+				//console.log(this.name + " is hit!");
+				if (!this.invul) {
+					this.ringSize -= settings.playerRingDecr;
+					if (this.ringSize <= this.size)
+						this.die();
+					else
+						socket.emit("playerHit", { id: this.id, ringSize: this.ringSize });
+						
+						//socket.emit("playerDeath", this);
+					this.invul = true;
+					setTimeout(() => { this.invul = false; }, settings.invulTime);
+				}
+			}
+		});
 
 		//if (collideBall) this.inCollision = "body";
 		//else if (collideBallRing) this.inCollision = "ring";
@@ -77,12 +96,11 @@ function _player(name, id, x=Math.round(settings.canvasWidth / 2),y=Math.round(s
 		this.actionShow();  // visual feedback
 
 		this.inCollision.forEach((x) => {
-			if (x.part == "body") {
-				//console.log(this.name + " is hit!");
-			} else if (x.part == "ring") {
+			if (x.part == "ring") {
 				//console.log(this.name + " collision with ring!");
 				
 				balls[x.ball].deflect(this.x,this.y);
+				socket.emit("ballUpdate", { ball: balls[x.ball], i: x.ball });
 
 			}
 		});
@@ -99,5 +117,10 @@ function _player(name, id, x=Math.round(settings.canvasWidth / 2),y=Math.round(s
 			this.ringInnerColor = settings.ringInnerColor;
 		}, Math.round(settings.actionCooldown / 4));
 	};
+
+	this.die = function () {
+		this.dead = true;
+		socket.emit("playerDeath", Player.id);
+	}
 
 }

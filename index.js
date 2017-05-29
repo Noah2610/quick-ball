@@ -41,11 +41,16 @@ io.sockets.on("connection", (socket) => {
 		// give new connection its ID
 		socket.emit("getInitData", { id: ID, players: users });
 		// add new user to server's user array
-		users.push({name: data.name, id: ID, x: data.x, y: data.y, color: data.color, size: data.size, ringSize: data.ringSize});
+		users.push({name: data.name, id: ID, x: data.x, y: data.y, color: data.color, size: data.size, ringSize: data.ringSize, dead: data.dead});
 		// give every previously established connection the new player's data
-		socket.broadcast.emit("addPlayer", users[users.length - 1]);
-		//console.log(chalk.cyan(JSON.stringify(data)));
+		socket.broadcast.emit("addPlayerClient", users[users.length - 1]);
+		//socket.broadcast.emit("addPlayerClient", data);
 	});
+
+	//socket.on("addPlayer", (data) => {
+		//// give every previously established connection the new player's data
+		//socket.broadcast.emit("addPlayerClient", data);
+	//});
 
 	socket.on("playerUpdate", (data) => {
 		socket.broadcast.emit("playerUpdateClient", data);
@@ -55,7 +60,33 @@ io.sockets.on("connection", (socket) => {
 				user.y = data.y;
 			}
 		});
-	})
+	});
+
+	socket.on("playerAction", (data) => {
+		socket.broadcast.emit("playerActionClient", data);
+	});
+
+	socket.on("playerHit", (data) => {
+		socket.broadcast.emit("playerHitClient", data);
+		users.forEach((user) => {
+			if (user.id == data.id) {
+				user.ringSize = data.ringSize;
+			}
+		});
+	});
+
+	socket.on("playerDeath", (data) => {
+		socket.broadcast.emit("playerDeathClient", data);
+		users.forEach((user) => {
+			if (user.id == data.id) {
+				user.dead = true;
+			}
+		});
+	});
+
+	socket.on("ballUpdate", (data) => {
+		socket.broadcast.emit("ballUpdateClient", data);
+	});
 
 
 	socket.on("disconnect", () => {

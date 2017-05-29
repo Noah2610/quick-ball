@@ -1,7 +1,7 @@
 
 export { _ball };
 
-function _ball(delay=1000, mvDir=[0,0], x=Math.round(settings.canvasWidth / 2),y=Math.round(settings.canvasHeight / 2)) {
+function _ball(delay=1000, mvDir=[1,0.5], x=10,y=10) {
 	this.delayed = true;
 	setTimeout(() => { this.delayed = false; }, delay);
 	this.mvDir = mvDir;
@@ -62,8 +62,8 @@ function _ball(delay=1000, mvDir=[0,0], x=Math.round(settings.canvasWidth / 2),y
 		ellipse(this.x,this.y, this.size);
 
 			// show graphical representation of spd (mvDir)
-			stroke(255,0,0);
-			line(settings.canvasWidth / 2, settings.canvasHeight / 2, settings.canvasWidth / 2 + this.mvDir[0] * 10, settings.canvasWidth / 2 + this.mvDir[1] * 10);
+			//stroke(255,0,0);
+			//line(settings.canvasWidth / 2, settings.canvasHeight / 2, settings.canvasWidth / 2 + this.mvDir[0] * 10, settings.canvasWidth / 2 + this.mvDir[1] * 10);
 
 	};
 
