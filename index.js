@@ -58,14 +58,15 @@ io.sockets.on("connection", (socket) => {
 		const bY = Math.round(Math.random() * settingsClient.canvasHeight);
 		const bSpdMult = settingsClient.ballSpdMult * (balls.length + 1);
 
-		balls.push([bID, bDelay, bMvDir, bX, bY, bSpdMult]);
-		io.sockets.emit("addBallClient", (balls[balls.length - 1]));
+		balls.push({ id: bID, delay: bDelay, mvDir: bMvDir, x: bX, y: bY, spdMult: bSpdMult});
+		const b = balls[balls.length -1];
+		io.sockets.emit("addBallClient", ([ b.id, b.delay, b.mvDir, b.x, b.y, b.spdMult ]));
 	}
 
 
 	socket.on("addUser", (data) => {
 		// give new connection its ID
-		socket.emit("getInitData", { id: ID, players: users });
+		socket.emit("getInitData", { id: ID, players: users, balls: balls });
 		// add new user to server's user array
 		users.push({name: data.name, id: ID, x: data.x, y: data.y, color: data.color, size: data.size, ringSize: data.ringSize, dead: data.dead});
 		// give every previously established connection the new player's data
@@ -127,7 +128,15 @@ io.sockets.on("connection", (socket) => {
 	});
 
 	socket.on("ballUpdate", (data) => {
-		socket.broadcast.emit("ballUpdateClient", data);
+		balls.forEach((ball) => {
+			if (data.id == ball.id) {
+				ball.x = data.x;
+				ball.y = data.y;
+				ball.mvDir = data.mvDir;
+				ball.spdMult = data.spdMult;
+				socket.broadcast.emit("ballUpdateClient", ball);
+			}
+		});
 	});
 
 
