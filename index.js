@@ -5,7 +5,7 @@ import chalk from "chalk";
 import path from "path";
 import datetime from "node-datetime";
 
-const port = 3000;
+const port = 7777;
 const app = express();
 const server = app.listen(port);
 const io = socket(server);
@@ -63,6 +63,12 @@ io.sockets.on("connection", (socket) => {
 		io.sockets.emit("addBallClient", ([ b.id, b.delay, b.mvDir, b.x, b.y, b.spdMult ]));
 	}
 
+	// clear all balls
+	function clearBalls() {
+		balls = [];
+		io.sockets.emit("clearBallsClient", false);
+	}
+
 
 	socket.on("addUser", (data) => {
 		// give new connection its ID
@@ -80,6 +86,11 @@ io.sockets.on("connection", (socket) => {
 			ballInterval = setInterval(newBall, settingsClient.ballSpawnRate);
 		}
 	});
+
+	// manually add ball from client-side
+	socket.on("addBall", () => { newBall(); });
+	// manunally clear all balls from client-side
+	socket.on("clearBalls", () => { clearBalls(); });
 
 	//socket.on("addPlayer", (data) => {
 		//// give every previously established connection the new player's data

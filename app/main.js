@@ -10,8 +10,8 @@ import { settings, ctrl } from "./settings";
 import { _player } from "./player";
 import { _ball } from "./ball";
 
-const port = 3000;
-const socketAddr = "http://192.168.178.101:" + port;
+const port = 7777;
+const socketAddr = "http://192.168.0.78:" + port;
 let Name = false;
 let ID;
 let Player;
@@ -116,6 +116,10 @@ function start() {
 		balls.push(new _ball(...data));
 	});
 
+	socket.on("clearBallsClient", () => {
+		balls = [];
+	});
+
 	// update other Player(s)
 	socket.on("playerUpdateClient", (data) => {
 		players.forEach((player) => {
@@ -193,11 +197,13 @@ function start() {
 
 
 // manually create more balls
-//   delay, mvDir, x,y
-//window.mkBall = function (delay, mvDir, x,y) {
-	//balls.push(new _ball(delay, mvDir, x,y));
-	//socket.emit("ballUpdate", { ball: balls[x.ball], i: x.ball });
-//};
+window.newBall = function () {
+	socket.emit("addBall", false);
+};
+
+window.clearBalls = function () {
+	socket.emit("clearBalls", false);
+};
 
 
 //function keyPressed() { window.preventDefault(); };
@@ -308,8 +314,8 @@ window.draw = function() {
 		for (let countPlayer = players.length - 1; countPlayer >= 0; countPlayer--) {
 			if (!players[countPlayer].dead)
 				players[countPlayer].show();
-			//showVertices(players[countPlayer].vertices);
-			//showVertices(players[countPlayer].ringVertices);
+			showVertices(players[countPlayer].vertices);
+			showVertices(players[countPlayer].ringVertices);
 		}
 
 		// collision check for this client only

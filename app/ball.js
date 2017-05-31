@@ -80,6 +80,12 @@ function _ball(id, delay=1000, mvDir=[1,0.5], x=10,y=10, spdMult=settings.ballSp
 			//stroke(255,0,0);
 			//line(settings.canvasWidth / 2, settings.canvasHeight / 2, settings.canvasWidth / 2 + this.mvDir[0] * 10, settings.canvasWidth / 2 + this.mvDir[1] * 10);
 
+			// show vertices
+			this.vertices.forEach((v) => {
+				fill(255,0,0);
+				ellipse(v.x,v.y,v.size);
+			});
+
 	};
 
 	this.getVertices = function () {
