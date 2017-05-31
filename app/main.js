@@ -99,7 +99,7 @@ function start() {
 		});
 		// populate balls array
 		data.balls.forEach((ball) => {
-			balls.push(new _ball(ball.id, ball.delay, ball.mvDir, ball.x, ball.y, ball.spdMult));
+			balls.push(new _ball(ball.id, 0, ball.mvDir, ball.x, ball.y, ball.spdMult));
 		});
 	});
 	
