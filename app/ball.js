@@ -43,16 +43,30 @@ function _ball(id, delay=1000, mvDir=[1,0.5], x=10,y=10, spdMult=settings.ballSp
 		this.getVertices();
 
 		// collision with canvas edges
+		let sendBallData = false;
 		this.vertices.forEach((v) => {
 			// left
-			if (v.x <= 0 && this.mvDir[0] < 0) this.mvDir[0] *= -1;
+			if (v.x <= 0 && this.mvDir[0] < 0) {
+				this.mvDir[0] *= -1;
+				sendBallData = true;
+			}
 			// right
-			if (v.x >= settings.canvasWidth && this.mvDir[0] > 0) this.mvDir[0] *= -1;
+			if (v.x >= settings.canvasWidth && this.mvDir[0] > 0) {
+				this.mvDir[0] *= -1;
+				sendBallData = true;
+			}
 			// top
-			if (v.y <= 0 && this.mvDir[1] < 0) this.mvDir[1] *= -1;
+			if (v.y <= 0 && this.mvDir[1] < 0) {
+				this.mvDir[1] *= -1;
+				sendBallData = true;
+			}
 			// bottom
-			if (v.y >= settings.canvasHeight && this.mvDir[1] > 0) this.mvDir[1] *= -1;
+			if (v.y >= settings.canvasHeight && this.mvDir[1] > 0) {
+				this.mvDir[1] *= -1;
+				sendBallData = true;
+			}
 		});
+		if (sendBallData) socket.emit("ballUpdate", this);
 	};
 
 	this.show = function () {

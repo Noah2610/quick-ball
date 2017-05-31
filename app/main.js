@@ -11,7 +11,7 @@ import { _player } from "./player";
 import { _ball } from "./ball";
 
 const port = 3000;
-const socketAddr = "http://localhost:" + port;
+const socketAddr = "http://192.168.178.101:" + port;
 let Name = false;
 let ID;
 let Player;
@@ -97,6 +97,10 @@ function start() {
 		data.players.forEach((player) => {
 			players.push(new _player(player.name, player.id, player.x,player.y, player.color, player.size, player.ringSize, player.dead));
 		});
+		// populate balls array
+		data.balls.forEach((ball) => {
+			balls.push(new _ball(ball.id, ball.delay, ball.mvDir, ball.x, ball.y, ball.spdMult));
+		});
 	});
 	
 
@@ -163,10 +167,10 @@ function start() {
 	socket.on("ballUpdateClient", (data) => {
 		balls.forEach((ball) => {
 			if (ball.id == data.id) {
-				ball.x = data.ball.x;
-				ball.y = data.ball.y;
-				ball.mvDir = data.ball.mvDir;
-				ball.spdMult = data.ball.spdMult;
+				ball.x = data.x;
+				ball.y = data.y;
+				ball.mvDir = data.mvDir;
+				ball.spdMult = data.spdMult;
 			}
 		});
 	});
@@ -185,9 +189,6 @@ function start() {
 	canvasDOM.style.visibility = "";
 	background(settings.bgColor);
 	
-	//balls.push(new _ball());
-	//setInterval(() => { balls.push(new _ball()); }, 60000);
-
 }
 
 
