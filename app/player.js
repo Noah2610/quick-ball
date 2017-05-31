@@ -47,26 +47,26 @@ function _player(name, id, x=Math.round(settings.canvasWidth / 2),y=Math.round(s
 		// check for ball collision
 		let bodyCollision = false;
 		// collision with body
-		balls.forEach((ball,i) => {
+		balls.forEach((ball) => {
 			//return collide(this, ball);
-			const obj = { part: "body", ball: i };
+			const obj = { part: "body", ball: ball.id };
 			const collisionExists = this.inCollision.some((x) => { return JSON.stringify(x) == JSON.stringify(obj); });
 			const collision = collide({ x:this.x,y:this.y, vertices: this.vertices }, ball);
 			bodyCollision = collision;
 			if (!collisionExists && collision) {
 				this.inCollision.push(obj);
-			} else if (collisionExists && !collision) this.inCollision.splice(obj.ball ,1);
+			} else if (collisionExists && !collision) this.inCollision.splice(obj.ball, 1);
 		});
 
 		// collision with ring
-		balls.forEach((ball,i) => {
+		balls.forEach((ball) => {
 			//return collide({ x:this.x,y:this.y, vertices: this.ringVertices }, ball);
-			const obj = { part: "ring", ball: i };
+			const obj = { part: "ring", ball: ball.id };
 			const collisionExists = this.inCollision.some((x) => { return JSON.stringify(x) == JSON.stringify(obj); });
 			const collision = collide({ x:this.x,y:this.y, vertices: this.ringVertices }, ball);
 			if (!collisionExists && collision && !bodyCollision) {
 				this.inCollision.push(obj);
-			} else if ((collisionExists && !collision) || (collisionExists && bodyCollision)) this.inCollision.splice(obj.ball ,1);
+			} else if ((collisionExists && !collision) || (collisionExists && bodyCollision)) this.inCollision.splice(obj.ball, 1);
 		});
 
 		this.inCollision.forEach((x) => {
@@ -99,7 +99,7 @@ function _player(name, id, x=Math.round(settings.canvasWidth / 2),y=Math.round(s
 			if (x.part == "ring") {
 				// deflect ball
 				balls[x.ball].deflect(this.x,this.y);
-				socket.emit("ballUpdate", { ball: balls[x.ball], i: x.ball });
+				socket.emit("ballUpdate", { ball: balls[x.ball], id: x.ball });
 				// gain ring
 				this.ringSize += settings.playerRingIncr;
 				socket.emit("playerGain", { id: this.id, ringSize: this.ringSize });

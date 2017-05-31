@@ -3,12 +3,15 @@ import "babel-polyfill";
 import io from "socket.io-client";
 import "p5";
 
+import { settings, ctrl } from "./settings";
+//window.settings = settings;
+//window.ctrl = ctrl;
 
 import { _player } from "./player";
 import { _ball } from "./ball";
 
-const port = 7777;
-const socketAddr = "http://noahro.dynu.com:" + port;
+const port = 3000;
+const socketAddr = "http://localhost:" + port;
 let Name = false;
 let ID;
 let Player;
@@ -26,53 +29,14 @@ const submitEl = document.querySelector("input#inputSubmit");
 
 window.setup = function() {
 
+	window.settings = settings;
+	window.ctrl = ctrl;
+
 	window.gameStart = false;
-
-	window.ctrl = {
-		//                       arrow keys
-		up:			["W".charCodeAt(0), 38],
-		down:		["S".charCodeAt(0), 40],
-		left:		["A".charCodeAt(0), 37],
-		right:	["D".charCodeAt(0), 39],
-		action:	[" ".charCodeAt(0), "X".charCodeAt(0)]
-	};
-	window.settings = {
-		canvasWidth: 600,
-		canvasHeight: 600,
-		fps: 45,
-		bgColor: 128,
-		actionCooldown: 250,
-		invulTime: 1000,
-
-		playerSize: 32,
-		playerColor: [
-			Math.floor(Math.random() * 256),
-			Math.floor(Math.random() * 256),
-			Math.floor(Math.random() * 256)
-		],
-		playerStep: 6,
-		playerTotalVertices: 8,
-		playerRingDecr: 16,
-
-		ringSize: 160,
-		ringWidth: 2,
-		ringColor: [255,128,0],
-		ringInnerColor: [0,0,16,32],
-		ringTotalVertices: 16,
-
-		ballSize: 12,
-		ballTotalVertices: 8,
-		ballColor: [255,128,32],
-		ballSpdMult: 4,
-		ballSpdIncr: 0.25
-	};
-	settings.playerRingIncr = Math.round(settings.playerRingDecr / 4);
-
-	window.frameRate(settings.fps);
 	window.canvas;
-	//window.socket;
 	window.players = [];
 	window.balls = [];
+	//window.socket;
 	// set following vars global from window
 	//ctrl = window.ctrl;
 	//settings = window.settings;
@@ -98,12 +62,16 @@ function checkName() {
 		bodyEl.removeChild(submitEl);
 		start();
 	} else {
-		titleEl.value = "Please enter a valid name:";
+		titleEl.innerHTML = "Please enter a valid name:";
 	}
 }
 
 
 function start() {
+
+	/*window.*/frameRate(settings.fps);
+
+
 	gameStart = true;
 	// create Player
 	/*window.*/Player = new _player(Name, 0);
@@ -140,8 +108,8 @@ function start() {
 		players.push(new _player(data.name, data.id, data.x,data.y, data.color, data.size, data.ringSize));
 	});
 
-	socket.on("addBall", (data) => {
-		balls.push(new _ball(data));
+	socket.on("addBallClient", (data) => {
+		balls.push(new _ball(...data));
 	});
 
 	// update other Player(s)
@@ -193,10 +161,14 @@ function start() {
 	});
 
 	socket.on("ballUpdateClient", (data) => {
-		balls[data.i].x = data.ball.x;
-		balls[data.i].y = data.ball.y;
-		balls[data.i].mvDir = data.ball.mvDir;
-		balls[data.i].spdMult = data.ball.spdMult;
+		balls.forEach((ball) => {
+			if (ball.id == data.id) {
+				ball.x = data.ball.x;
+				ball.y = data.ball.y;
+				ball.mvDir = data.ball.mvDir;
+				ball.spdMult = data.ball.spdMult;
+			}
+		});
 	});
 
 	// remove player
@@ -213,8 +185,8 @@ function start() {
 	canvasDOM.style.visibility = "";
 	background(settings.bgColor);
 	
-	balls.push(new _ball());
-	setInterval(() => { balls.push(new _ball()); }, 60000);
+	//balls.push(new _ball());
+	//setInterval(() => { balls.push(new _ball()); }, 60000);
 
 }
 

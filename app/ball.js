@@ -1,7 +1,8 @@
 
 export { _ball };
 
-function _ball(delay=1000, mvDir=[1,0.5], x=10,y=10) {
+function _ball(id, delay=1000, mvDir=[1,0.5], x=10,y=10, spdMult=settings.ballSpdMult) {
+	this.id = id;
 	this.delayed = true;
 	setTimeout(() => { this.delayed = false; }, delay);
 	this.mvDir = mvDir;
@@ -10,7 +11,7 @@ function _ball(delay=1000, mvDir=[1,0.5], x=10,y=10) {
 	this.size = settings.ballSize;
 	this.color = settings.ballColor;
 	this.vertices = getVertices(this.x,this.y, this.size, settings.ballTotalVertices);
-	this.spdMult = settings.ballSpdMult;
+	this.spdMult = spdMult;
 	this.spdIncr = settings.ballSpdIncr;
 
 	this.deflect = function (x, y) {
