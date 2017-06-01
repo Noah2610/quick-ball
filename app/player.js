@@ -78,7 +78,7 @@ function _player(name, id, x=Math.round(settings.canvasWidth / 2),y=Math.round(s
 					if (this.ringSize <= this.size)
 						this.die();
 					else
-						socket.emit("playerHit", { id: this.id, ringSize: this.ringSize });
+						socket.emit("playerHit", { id: this.id, ringSize: this.ringSize, ringVertices: this.ringVertices });
 						
 						//socket.emit("playerDeath", this);
 					this.invul = true;

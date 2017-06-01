@@ -146,6 +146,7 @@ function start() {
 		players.forEach((player) => {
 			if (player.id == data.id) {
 				player.ringSize = data.ringSize;
+				player.ringVertices = data.ringVertices;
 				player.invul = true;
 				setTimeout(() => { player.invul = false; }, settings.invulTime);
 			}
@@ -272,7 +273,7 @@ window.getVertices = function(x,y,size,totalVertices) {
 
 };
 
-function showVertices(vertices) {
+window.showVertices = function (vertices) {
 	fill(255,0,0);
 	noStroke();
 	ellipseMode(CENTER);
@@ -330,8 +331,8 @@ window.draw = function() {
 		for (let countPlayer = players.length - 1; countPlayer >= 0; countPlayer--) {
 			if (!players[countPlayer].dead)
 				players[countPlayer].show();
-			showVertices(players[countPlayer].vertices);
-			showVertices(players[countPlayer].ringVertices);
+			//showVertices(players[countPlayer].vertices);
+			//showVertices(players[countPlayer].ringVertices);
 		}
 
 		// collision check for this client only
