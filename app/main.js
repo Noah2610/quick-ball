@@ -10,8 +10,8 @@ import { settings, ctrl } from "./settings";
 import { _player } from "./player";
 import { _ball } from "./ball";
 
-const port = 3000;
-const socketAddr = "http://192.168.178.101:" + port;
+const port = 7777;
+const socketAddr = "http://192.168.0.78:" + port;
 let Name = false;
 let ID;
 let Player;

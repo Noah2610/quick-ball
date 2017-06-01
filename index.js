@@ -5,7 +5,7 @@ import chalk from "chalk";
 import path from "path";
 import datetime from "node-datetime";
 
-const port = 3000;
+const port = 7777;
 const app = express();
 const server = app.listen(port);
 const io = socket(server);
