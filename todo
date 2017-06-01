@@ -1,0 +1,13 @@
+
+01.06.107 - v1.1.1
+	bugs:
+		x player ring size doesn't shrink when hit,
+		x		player ring size only updates when player moves
+		x player canvas edge boundaries
+		x on player death, remove its vertices and inCollision objects
+
+	plans:
+		proper win condition / respawn
+		upgrade pickups
+		change action key to a keydown event
+	

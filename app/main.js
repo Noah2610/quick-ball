@@ -215,19 +215,23 @@ function checkKey(key) {
 function checkControls() {
 	let hasMoved = false;
 	if (ctrl.up.some(checkKey) && !ctrl.down.some(checkKey)) {  // up
-		Player.y -= settings.playerStep;
+		if (Player.onScreen("up")) Player.y -= settings.playerStep;
+		else Player.y = getDist({x: Player.x, y: Player.y}, {x: Player.vertices[0].x, y: Player.vertices[0].y});
 		hasMoved = true;
 	} else
 	if (ctrl.down.some(checkKey) && !ctrl.up.some(checkKey)) {  // down
-		Player.y += settings.playerStep;
+		if (Player.onScreen("down")) Player.y += settings.playerStep;
+		else Player.y = settings.canvasHeight - getDist({x: Player.x, y: Player.y}, {x: Player.vertices[0].x, y: Player.vertices[0].y});
 		hasMoved = true;
 	}
 	if (ctrl.left.some(checkKey) && !ctrl.right.some(checkKey)) {  // left
-		Player.x -= settings.playerStep;
+		if (Player.onScreen("left")) Player.x -= settings.playerStep;
+		else Player.x = getDist({x: Player.x, y: Player.y}, {x: Player.vertices[0].x, y: Player.vertices[0].y});
 		hasMoved = true;
 	} else
 	if (ctrl.right.some(checkKey) && !ctrl.left.some(checkKey)) {  // right
-		Player.x += settings.playerStep;
+		if (Player.onScreen("right")) Player.x += settings.playerStep;
+		else Player.x = settings.canvasWidth - getDist({x: Player.x, y: Player.y}, {x: Player.vertices[0].x, y: Player.vertices[0].y});
 		hasMoved = true;
 	}
 	// CHANGE THIS TO USE SAME FUNCTION AS ABOVE
@@ -295,6 +299,18 @@ window.collide = function(instance1, instance2) {
 window.getDist = function (a,b) {
 	return Math.sqrt(Math.pow(a.x - b.x,2) + Math.pow(a.y - b.y,2));
 }
+
+window.offScreen = function (x,y, vertices) {
+	if (
+		x < 0 || x > settings.canvasWidth ||
+		y < 0 || y > settings.canvasHeight
+		) return true;
+	return vertices.some((v) => {
+		return (
+			v.x < 0 || v.x > settings.canvasWidth ||
+			v.y < 0 || v.y > settings.canvasHeight );
+	});
+};
 
 
 window.draw = function() {

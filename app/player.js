@@ -74,6 +74,7 @@ function _player(name, id, x=Math.round(settings.canvasWidth / 2),y=Math.round(s
 				if (!this.invul) {
 					socket.emit("ballUpdate", x.ball);
 					this.ringSize -= settings.playerRingDecr;
+					this.ringVertices = getVertices(this.x,this.y,this.ringSize, settings.ringTotalVertices);
 					if (this.ringSize <= this.size)
 						this.die();
 					else
@@ -122,8 +123,32 @@ function _player(name, id, x=Math.round(settings.canvasWidth / 2),y=Math.round(s
 		}, Math.round(settings.actionCooldown / 4));
 	};
 
+	this.onScreen = function (dir) {
+		switch (dir) {
+			case "up":
+				if (offScreen(this.x, this.y - settings.playerStep, this.vertices.map((v) => { return {x:v.x,y:v.y-settings.playerStep}; }))) return false;
+				else return true;
+				break;
+			case "down":
+				if (offScreen(this.x, this.y + settings.playerStep, this.vertices.map((v) => { return {x:v.x,y:v.y+settings.playerStep}; }))) return false;
+				else return true;
+				break;
+			case "left":
+				if (offScreen(this.x - settings.playerStep, this.y, this.vertices.map((v) => { return {x:v.x-settings.playerStep,y:v.y}; }))) return false;
+				else return true;
+				break;
+			case "right":
+				if (offScreen(this.x + settings.playerStep, this.y, this.vertices.map((v) => { return {x:v.x+settings.playerStep,y:v.y}; }))) return false;
+				else return true;
+				break;
+		}
+	};
+
 	this.die = function () {
 		this.dead = true;
+		this.vertices = [];
+		this.ringVertices = [];
+		this.inCollision = [];
 		socket.emit("playerDeath", Player.id);
 	}
 
